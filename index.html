@@ -1830,6 +1830,27 @@
       initColorPickerButtons();
       updateCalculation();
       renderReviews(currentReviewPage || 1);
+
+      // Preserve dynamic custom/cloud product title, description & price
+      try {
+        const stored = JSON.parse(localStorage.getItem('ul_store_products') || 'null');
+        if (Array.isArray(stored) && stored.length > 0) {
+          const p = stored[0];
+          if (p && p.title && currentLang === 'ar') {
+            const titleEl = document.getElementById('t_title');
+            if (titleEl) titleEl.innerText = p.title;
+          }
+          if (p && p.desc && currentLang === 'ar') {
+            const subEl = document.getElementById('t_subtitle');
+            if (subEl) subEl.innerText = p.desc;
+          }
+          if (p && p.price) {
+            singleItemPrice = Number(p.price) || 110;
+            const priceEl = document.getElementById('displaySinglePrice');
+            if (priceEl) priceEl.innerText = `${singleItemPrice} ₪`;
+          }
+        }
+      } catch (e) { }
     }
 
     // Product Gallery Images (Synced with Admin Panel)
