@@ -59,11 +59,17 @@
     try {
       const _px = JSON.parse(localStorage.getItem('ul_tracking_pixels') || '{}');
       const metaPixelId = (_px && _px.metaPixelId) ? _px.metaPixelId : '1068543309381807';
+      const urlParams = new URLSearchParams(window.location.search);
+      const testCode = urlParams.get('test_event_code') || _px.testEventCode || 'TEST56902';
       fbq('init', metaPixelId);
-      fbq('track', 'PageView');
+      if (testCode) {
+        fbq('track', 'PageView', {}, { test_event_code: testCode });
+      } else {
+        fbq('track', 'PageView');
+      }
     } catch (e) {
       fbq('init', '1068543309381807');
-      fbq('track', 'PageView');
+      fbq('track', 'PageView', {}, { test_event_code: 'TEST56902' });
     }
   </script>
   <noscript><img height="1" width="1" style="display:none"
@@ -2989,10 +2995,16 @@
           num_items: orderData.quantity || 1
         };
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const _pixelsObj = JSON.parse(localStorage.getItem('ul_tracking_pixels') || '{}');
+        const testCode = urlParams.get('test_event_code') || _pixelsObj.testEventCode || 'TEST56902';
+
         // Meta Pixel Browser Event (with eventID for server deduplication)
         if (typeof window.fbq === 'function') {
-          window.fbq('track', 'Purchase', basePayload, { eventID: String(orderData.orderId) });
-          console.log('⚡ Meta Pixel (Browser) Purchase Dispatched:', basePayload);
+          const metaOptions = { eventID: String(orderData.orderId) };
+          if (testCode) metaOptions.test_event_code = testCode;
+          window.fbq('track', 'Purchase', basePayload, metaOptions);
+          console.log('⚡ Meta Pixel (Browser) Purchase Dispatched:', basePayload, metaOptions);
         }
 
         // Meta Conversions API (Direct Server-Side Event with 10.0 Match Quality)
@@ -3002,7 +3014,8 @@
           phone: orderData.phone,
           city: orderData.city,
           reportedValue: basePayload.value,
-          quantity: basePayload.num_items
+          quantity: basePayload.num_items,
+          testCode: testCode
         });
 
         // TikTok Pixel
@@ -3111,6 +3124,10 @@
             }
           ]
         };
+
+        if (orderData.testCode) {
+          capiPayload.test_event_code = orderData.testCode;
+        }
 
         fetch(`https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`, {
           method: 'POST',
