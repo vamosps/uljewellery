@@ -4960,18 +4960,16 @@
       if (supabaseClient) {
         try {
           supabaseClient.from('products').upsert([{
-            id: 'prod-lacoste-set', // Always update flagship row for customer store index.html
+            id: 'prod-lacoste-set',
             title: title,
             price: price,
-            stock: stock,
-            image: image,
-            video_url: videoUrl || '',
+            old_price: 180,
             description: desc || '',
             colors: colorVariants,
             gallery: flagshipGallery,
-            is_flagship: true,
-            updated_at: new Date().toISOString()
-          }]).then(({ error }) => {
+            video_url: videoUrl || '',
+            is_active: true
+          }], { onConflict: 'id' }).then(({ error }) => {
             if (error) {
               console.warn('Supabase product upsert error:', error);
             } else {
