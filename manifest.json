@@ -1,0 +1,32 @@
+{
+  "name": "UL JEWELLERY | متجر يو إل للمجوهرات",
+  "short_name": "UL JEWELLERY",
+  "description": "المتجر الرسمي لطقم أساور كابلز لاكوست الفاخر والمجوهرات الملكية من UL Jewellery",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./logo.png",
+      "sizes": "512x512 192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180 192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "name": "UL Admin | تطبيق إدارة الطلبات والمتجر",
+  "short_name": "UL Admin",
+  "description": "تطبيق إدارة الطلبات، الإشعارات الفورية، فواتير الشحن، ونقطة البيع لمتجر UL JEWELLERY",
+  "start_url": "./admin.html",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./logo.png",
+      "sizes": "512x512 192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180 192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "إدارة الطلبات",
+      "short_name": "الطلبات",
+      "description": "عرض وتحديث حالة الطلبات الجديدة",
+      "url": "./admin.html#orders",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "نقطة البيع والكاشير",
+      "short_name": "POS",
+      "description": "تسجيل طلب يدوي فوري",
+      "url": "./admin.html#pos",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "إدارة المنتجات والألوان",
+      "short_name": "المنتجات",
+      "description": "تعديل الكتالوج والأسعار والألوان",
+      "url": "./admin.html#products",
+      "icons": [
+        {
+          "src": "./favicon.svg",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
