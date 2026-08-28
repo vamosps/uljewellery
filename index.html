@@ -3489,12 +3489,13 @@
 
     function applyProductDataToStore(flagship) {
       if (!flagship) return;
+      const primaryImg = (flagship.colors && flagship.colors[0]?.image) || (flagship.gallery && flagship.gallery[0]?.src) || flagship.image || 'https://images.unsplash.com/photo-1611591475880-990a4244f77c?q=80&w=800';
       const mappedProduct = {
         id: flagship.id || 'prod-lacoste-set',
-        title: flagship.title || 'طقم أساور كابلز لاكوست',
+        title: flagship.title || 'طقم أساور كابلز لاكوست الملكي',
         price: Number(flagship.price) || 110,
-        stock: flagship.stock,
-        image: flagship.image || '',
+        oldPrice: Number(flagship.old_price) || 180,
+        image: primaryImg,
         videoUrl: (flagship.video_url || flagship.videoUrl || '').trim(),
         desc: flagship.description || flagship.desc || '',
         colors: Array.isArray(flagship.colors) ? flagship.colors : [],
@@ -3515,12 +3516,12 @@
         localStorage.removeItem('ul_product_video_url');
       }
 
-      // Update UI title and description if current language is Arabic (or custom)
-      if (mappedProduct.title && currentLang === 'ar') {
+      // Update UI title, description, and prices
+      if (mappedProduct.title) {
         const titleEl = document.getElementById('t_title');
         if (titleEl) titleEl.innerText = mappedProduct.title;
       }
-      if (mappedProduct.desc && currentLang === 'ar') {
+      if (mappedProduct.desc) {
         const subEl = document.getElementById('t_subtitle');
         if (subEl) subEl.innerText = mappedProduct.desc;
       }
@@ -3541,18 +3542,19 @@
     async function fetchLiveProductFromSupabase() {
       if (!supabaseClient) return;
       try {
-        // Fast targeted fetch: gets single flagship record instantly
         const { data, error } = await supabaseClient
           .from('products')
-          .select('id, title, price, stock, image, video_url, description, colors, gallery, is_flagship, updated_at')
-          .order('updated_at', { ascending: false })
+          .select('*')
+          .order('created_at', { ascending: false })
           .limit(1);
 
         if (!error && Array.isArray(data) && data.length > 0 && data[0]) {
           applyProductDataToStore(data[0]);
+        } else if (error) {
+          console.warn('Supabase product fetch warning:', error);
         }
       } catch (err) {
-        console.log('Supabase product fetch fallback:', err);
+        console.warn('Supabase product fetch fallback:', err);
       }
     }
 
