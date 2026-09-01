@@ -1980,7 +1980,19 @@
       let html = '';
       images.forEach((img, idx) => {
         const isVid = img.type === 'video' || Boolean(img.videoUrl);
-        const thumbSrc = img.poster || img.src || 'https://images.unsplash.com/photo-1611591475880-990a4244f77c?q=80&w=600';
+        const vUrl = (img.videoUrl || (isVid ? img.src : '') || '').trim();
+        let thumbSrc = (img.poster || (isVid ? '' : img.src) || '').trim();
+        if (!thumbSrc && (vUrl.includes('youtube.com') || vUrl.includes('youtu.be'))) {
+          let ytId = '';
+          if (vUrl.includes('youtu.be/')) ytId = vUrl.split('youtu.be/')[1].split('?')[0];
+          else if (vUrl.includes('v=')) ytId = vUrl.split('v=')[1].split('&')[0];
+          else if (vUrl.includes('embed/')) ytId = vUrl.split('embed/')[1].split('?')[0];
+          if (ytId) thumbSrc = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+        }
+        if (!thumbSrc) {
+          thumbSrc = img.src || 'https://images.unsplash.com/photo-1611591475880-990a4244f77c?q=80&w=600';
+        }
+
         html += `
           <button 
             type="button" 

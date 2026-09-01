@@ -4881,9 +4881,13 @@
         const gVid = (g.videoUrl || '').trim();
         const mediaKey = gType === 'video' ? ('vid:' + gVid) : ('img:' + gSrc);
 
-        if ((gSrc || gVid) && !seenMedia.has(mediaKey) && !seenMedia.has(gSrc)) {
+        const isDuplicate = gType === 'video'
+          ? (!gVid || seenMedia.has(mediaKey))
+          : (!gSrc || seenMedia.has(mediaKey) || seenMedia.has(gSrc));
+
+        if (!isDuplicate) {
           seenMedia.add(mediaKey);
-          if (gSrc) seenMedia.add(gSrc);
+          if (gType !== 'video' && gSrc) seenMedia.add(gSrc);
           flagshipGallery.push({
             id: g.id || ('extra-' + (i + 1)),
             type: gType,
