@@ -1,5 +1,6 @@
-const CACHE_NAME = 'ul-jewellery-cache-v1';
+const CACHE_NAME = 'ul-jewellery-cache-v2';
 const ASSETS_TO_CACHE = [
+  './',
   './index.html',
   './admin.html',
   './manifest.json',
@@ -11,6 +12,13 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
+        console.warn('SW cache.addAll warning:', err);
+      });
+    })
+  );
   self.skipWaiting();
 });
 
@@ -27,41 +35,78 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+
   const url = event.request.url;
 
-  // Never cache live realtime Supabase mutations, Telegram API, ImgBB uploads or dynamic tracking APIs
-  if (url.includes('supabase.co') || url.includes('telegram.org') || url.includes('imgbb.com') || url.includes('snapchat.com') || url.includes('google-analytics.com')) {
+  // Ignore non-http(s) schemes (like chrome-extension://, moz-extension://)
+  if (!url.startsWith('http://') && !url.startsWith('https://')) return;
+
+  // Never intercept realtime database, external APIs, tracking pixels, or third-party CDN scripts
+  if (
+    url.includes('supabase.co') ||
+    url.includes('telegram.org') ||
+    url.includes('imgbb.com') ||
+    url.includes('ibb.co') ||
+    url.includes('facebook.net') ||
+    url.includes('facebook.com') ||
+    url.includes('snapchat.com') ||
+    url.includes('sc-static.net') ||
+    url.includes('tiktok.com') ||
+    url.includes('google-analytics.com') ||
+    url.includes('googletagmanager.com') ||
+    url.includes('clarity.ms') ||
+    url.includes('cdn.jsdelivr.net') ||
+    url.includes('cdnjs.cloudflare.com') ||
+    url.includes('fonts.googleapis.com') ||
+    url.includes('fonts.gstatic.com') ||
+    url.includes('cdn.tailwindcss.com')
+  ) {
     return;
   }
 
-  // For HTML documents: Network First with ultra-fast cache fallback
+  // For HTML documents / Navigations: Network First with Cache Fallback
   if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const copy = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
           }
           return networkResponse;
         })
-        .catch(() => caches.match(event.request) || caches.match('./index.html'))
+        .catch(async () => {
+          const cached = await caches.match(event.request);
+          if (cached) return cached;
+          const fallback = await caches.match('./index.html');
+          if (fallback) return fallback;
+          return new Response('Network error occurred', { status: 408, headers: { 'Content-Type': 'text/plain' } });
+        })
     );
     return;
   }
 
-  // For fonts, icons, styles and images: Stale-While-Revalidate for instant render
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse.clone()));
-        }
-        return networkResponse;
-      }).catch(() => {});
-      return cachedResponse || fetchPromise;
-    })
-  );
+  // For local static assets (same-origin): Stale-While-Revalidate
+  const isSameOrigin = url.startsWith(self.location.origin);
+  if (isSameOrigin) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const copy = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            return cachedResponse;
+          });
+
+        return cachedResponse || fetchPromise;
+      })
+    );
+  }
 });
 
 // Push & System Notification Handlers
